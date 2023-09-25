@@ -11,7 +11,23 @@ class Filless(DjangoObjectType):
 class Query(graphene.ObjectType):
 
     allFiles=graphene.List(Filless)
+    """
+    {
+        allFiles{
+          user,
+          filename
+        }
+    }
+    """
     aFiles=graphene.List(Filless,user=graphene.String())
+    """
+    {
+        aFiles(user:"csvfgs"){
+          user,
+          filename
+        }
+    }
+    """
 
     def resolve_allFiles(root,info):
         return Files.objects.all()
@@ -25,14 +41,23 @@ class Posts(graphene.Mutation):
         filename=graphene.String(required=True)
         user=graphene.String(required=True)
 
-    post=graphene.Field(Filless)
+    creates=graphene.Field(Filless)
 
     @classmethod
     def mutate(cls,self,info,filename,user):
         post=Files(filename=filename,user=user)
         post.save()
-        return Posts(post=post)
+        return Posts(creates=post)
 
+"""
+mutation abc{
+  create(filename:"harry potter.jpg",user:"uts1"){
+    creates{
+      filename,
+      user
+    }
+  }
+"""
 
     
 #UPDATE.........................
@@ -41,7 +66,7 @@ class Update(graphene.Mutation):
         filename=graphene.String(required=True)
         user=graphene.String(required=True)
 
-    post=graphene.Field(Filless)
+    updates=graphene.Field(Filless)
 
     @classmethod
     def mutate(cls,self,info,filename,user):
@@ -50,22 +75,41 @@ class Update(graphene.Mutation):
             obj.filename=filename
             obj.save()
             post=Files.objects.get(user=user)
-            return Posts(post=post)
+            return Update(updates=post)
     
+"""
+mutation abc{
+  update(filename:"harry pottersss.jpg",user:"uts1"){
+    updates{
+      filename,
+      user
+    }
+  }
+}
+}
+"""
+
 #DELETE..............................
 class Delete(graphene.Mutation):
     class Arguments:
         user=graphene.String(required=True)
 
-    msg = graphene.String()
+    deletes = graphene.String()
 
     @classmethod
     def mutate(cls,self,info,user):
         if(Files.objects.get(user=user)):        
             obj=Files.objects.get(user=user)
             obj.delete()
-            return Delete(msg = "Post deleted Successfully")
+            return Delete(deletes = "Post deleted Successfully")
 
+"""
+mutation abc{
+  delete(user:"ygyg"){
+   deletes
+  }
+}
+"""
 
 class Mutation(graphene.ObjectType):
     create = Posts.Field()
